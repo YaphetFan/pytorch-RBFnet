@@ -66,31 +66,13 @@ class RBF(nn.Module):
         self.in_layers = in_layers[0]
         self.centers = nn.Parameter(centers)
         self.dists = nn.Parameter(torch.ones(1,centers.size(0)))
-
-        # self.dists = nn.Parameter(torch.ones(self.centers.size(0), in_layers[0]))
-
-
         self.sigmas = sigmas
-
-
-        # self.linear0 = nn.Linear(in_layers[0], in_layers[0], bias = True)
         self.linear1 = nn.Linear(centers.size(0), in_layers[1], bias = True)
 
     def forward(self, x):
-        # x = x.view(-1, self.in_layers)
-        # x = torch.sigmoid(self.linear0(x))
-
         phi = self.radial_basis(x)
-
         out = torch.sigmoid(self.linear1(phi.float()))
         return out
-
-    # def radial_basis(self,x):
-
-    #     c = self.centers.view(self.centers.size(0),-1).repeat(x.size(0), 1, 1)
-    #     x = x.view(x.size(0),-1).unsqueeze(1).repeat(1, self.centers.size(0),1)
-    #     phi = torch.exp(-self.dists.mul((c-x).pow(2).sum(2, keepdim=False).pow(0.5) ))
-    #     return phi
 
     def radial_basis(self,x):
         x = x.view(x.size(0),-1)
@@ -106,9 +88,7 @@ class RBF(nn.Module):
             dists[i] = temp
 
         dists = dists.permute(1,0)
-        # print(dists)
         phi = torch.exp(-1*(dists/(2*sigma))) #gaussian
-        # phi.requires_grad_(True)
         return phi
 
 
@@ -137,13 +117,11 @@ class Net(nn.Module):
 
 
 def training(engine, batch, device, model, criterion, optimizer):
-    # torch.set_printoptions(profile="full")
     inputs, labels = batch[0].to(device), batch[1].to(device)
     optimizer.zero_grad()
     outputs = model(inputs)
     loss = criterion(outputs, labels)
     loss.backward()
-    # print(optimizer)
     optimizer.step()
     return outputs, labels
 
